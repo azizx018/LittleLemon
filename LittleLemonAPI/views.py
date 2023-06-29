@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import Cart, MenuItem
+from .models import Cart, MenuItem, Order
 from .models import Cateogry
-from .serializers import CartSerializer, CategorySerializer, MenuItemSerializer
+from .serializers import CartSerializer, CategorySerializer, MenuItemSerializer, OrderSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import generics
@@ -13,10 +13,9 @@ class MenuItemView(generics.ListCreateAPIView):
         queryset = MenuItem.objects.all()
         serializer_class = MenuItemSerializer
 
-# class SingleMenuItemView(generics.ListCreateAPIView):
-#         queryset = get_object_or_404(MenuItem, id)
-#         # MenuItem.objects.get(pk=id)
-#         serializer_class = MenuItemSerializer        
+class OrderItemView(generics.ListCreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer     
 
 class CategoryView(generics.ListCreateAPIView):
     
@@ -47,6 +46,12 @@ def single_item(request,id):
     item = get_object_or_404(MenuItem, pk=id)
     serialized_item = MenuItemSerializer(item)
     return Response(serialized_item.data)
+
+@api_view()
+def single_order(request,id):
+    order = get_object_or_404(Order, pk=id)
+    serialized_item = OrderSerializer(order)
+    return Response(serialized_item.data)    
 
 @api_view(['GET','POST'])
 def category(request):
