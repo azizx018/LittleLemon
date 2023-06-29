@@ -10,9 +10,13 @@ from rest_framework import generics
 
 # Create your views here.
 class MenuItemView(generics.ListCreateAPIView):
-    
         queryset = MenuItem.objects.all()
         serializer_class = MenuItemSerializer
+
+# class SingleMenuItemView(generics.ListCreateAPIView):
+#         queryset = get_object_or_404(MenuItem, id)
+#         # MenuItem.objects.get(pk=id)
+#         serializer_class = MenuItemSerializer        
 
 class CategoryView(generics.ListCreateAPIView):
     
