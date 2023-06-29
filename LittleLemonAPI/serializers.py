@@ -19,9 +19,13 @@ class MenuItemSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     menuitem = MenuItemSerializer(read_only=True)
     menuitem_id = serializers.IntegerField(write_only=True)
+    price = serializers.SerializerMethodField(method_name= 'calculate_price')
     class Meta:
         model = Cart
         fields = ['id','user','menuitem', 'quantity', 'unit_price', 'price', 'menuitem_id', 'user_id']
+
+    def calculate_price(self, product:Cart):
+        return product.unit_price * product.quantity    
 
 
 class OrderSerializer(serializers.ModelSerializer):
