@@ -7,6 +7,8 @@ from .serializers import CartSerializer, CategorySerializer, MenuItemSerializer,
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
 
 # Create your views here.
 class MenuItemView(generics.ListCreateAPIView):
@@ -66,5 +68,6 @@ def category(request):
         return Response(serialized_category.data, status.HTTP_201_CREATED)
 
 @api_view()
+@permission_classes([IsAuthenticated])
 def secret(request):
     return Response({"message":"Some secret message"})          
