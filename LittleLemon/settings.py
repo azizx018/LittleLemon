@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'LittleLemonAPI',
-    'debug_toolbar'
+    'debug_toolbar',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -130,8 +131,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES' : [
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
 
-        ]
+        ],
+    'DEFAULT_THROTTLE_RATES' : {
+        'anon': '2/minute',
+        'user': '5/minute'
+    }
+    
+}
+
+DJOSER = {
+    "USER_ID_FIELD": "username"
 }
 
 INTERNAL_IPS = [
