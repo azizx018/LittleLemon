@@ -96,7 +96,7 @@ def secret(request):
     return Response({"message":"Some secret message"})      
 
 @api_view(['POST','DELETE', 'GET'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAuthenticated])
 def managers(request):
     if request.method == 'GET':
         users = User.objects.filter(groups__name='Manager')
@@ -114,7 +114,29 @@ def managers(request):
             managers.user_set.remove(user)    
         return Response({"message":"User deleted from manager group"}, 200)
 
-    return Response({"message": "error"}, status.HTTP_400_BAD_REQUEST)    
+    return Response({"message": "error"}, status.HTTP_400_BAD_REQUEST)   
+
+@api_view(['POST','DELETE', 'GET'])
+@permission_classes([IsAuthenticated])
+def delivery(request):
+    if request.method == 'GET':
+        users = User.objects.filter(groups__name='Delivery crew')
+        user_serializer = UserSerializer(users, many=True)
+        return Response({"data": user_serializer.data}, 200)
+    username = request.data['username']
+    if username:
+        user = get_object_or_404(User, username=username)
+        managers = Group.objects.get(name="Delivery crew")
+            
+        if request.method == 'POST':        
+            managers.user_set.add(user)
+            return Response({"message":"User added to delivery group"}, 201)
+        elif request.method == 'DELETE':
+            managers.user_set.remove(user)    
+        return Response({"message":"User deleted from delivery group"}, 200)
+
+    return Response({"message": "error"}, status.HTTP_400_BAD_REQUEST)   
+
 
 @api_view()
 @permission_classes([IsAuthenticated])
