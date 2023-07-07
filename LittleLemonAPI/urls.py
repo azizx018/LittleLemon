@@ -4,7 +4,8 @@ from . import views
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
-    # path('menu-items', views.MenuItemView.as_view()),
+    # 
+    # ath('menu-items', views.MenuItemView.as_view()),
     path('category', views.CategoryView.as_view()),
     path('cart', views.CartView.as_view()),
     path('orders', views.OrderItemView.as_view()),

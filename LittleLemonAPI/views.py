@@ -1,10 +1,9 @@
-from os import stat
-from unicodedata import name
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from .models import Cart, MenuItem, Order
 from .models import Cateogry
-from .serializers import CartSerializer, CategorySerializer, MenuItemSerializer, OrderSerializer
+from .serializers import CartSerializer, CategorySerializer, MenuItemSerializer, OrderSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import generics
@@ -70,49 +69,7 @@ def single_item(request, id):
             return Response({"message":"Item has been updated"}, status=status.HTTP_200_OK)    
 
     return Response({"message":"You are  not authorized"}, 403)
-
-    
-
-# @api_view(['DELETE'])
-# def single_item(request, id):
-#     if request.method == 'DELETE' and request.user.groups.filter(name='Manager'):
-#         item = MenuItem.objects.filter(id=id)
-#         item.delete()
-#         return Response({"message":"Menu item has been deleted"}, status.HTTP_200_OK)
-#     else:
-#         return Response({"message":"Error"}, status.HTTP_400_BAD_REQUEST)
-
-# @api_view(['PUT','PATCH'])
-# def single_item(request, id):
-#     if request.user.groups.filter(name='Manager'):
-#         item = MenuItem.objects.filter(id=id)
-#         serialized_item = MenuItemSerializer(item, data=request.data, partial=True)
-#         if serialized_item.is_valid():
-#             serialized_item.save()
-#             return Response({"message":"Item has been updated"}, status.HTTP_200_OK)
-#         return Response({"message": "Error"}, 400)    
-
-
-
-       
-           
-
-# @api_view(['GET','PUT','DELETE','PATCH'])
-# def single_item(request, id):
-#     # item_id = request.data['id']
-#     if request.method == 'GET':
-#         item = get_object_or_404(MenuItem, pk=id)
-#         serialized_item = MenuItemSerializer(item)
-#         if request.method == 'PUT' or 'PATCH' and request.user.groups.filter(name='Manager'):
-#             serialized_item.data.update(item)
-#             return Response({"message":"Menu item has been updated"})
-#         elif request.method == 'DELETE' and request.user.groups.filter(name='Manager'):
-#             serialized_item.data.remove(item) 
-#         return Response({"message":"Item deleted from menu"})
-#     else:
-#         return Response({"message":"You are not autorized"}, 403)    
-
-#     return Response({"message": "error"}, status.HTTP_400_BAD_REQUEST)          
+         
 
 
 @api_view()
@@ -138,19 +95,24 @@ def category(request):
 def secret(request):
     return Response({"message":"Some secret message"})      
 
-@api_view(['POST','DELETE'])
+@api_view(['POST','DELETE', 'GET'])
 @permission_classes([IsAdminUser])
 def managers(request):
+    if request.method == 'GET':
+        users = User.objects.filter(groups__name='Manager')
+        user_serializer = UserSerializer(users, many=True)
+        return Response({"data": user_serializer.data}, 200)
     username = request.data['username']
     if username:
         user = get_object_or_404(User, username=username)
         managers = Group.objects.get(name="Manager")
+            
         if request.method == 'POST':        
             managers.user_set.add(user)
-            return Response({"message":"User added to manager group"})
+            return Response({"message":"User added to manager group"}, 201)
         elif request.method == 'DELETE':
             managers.user_set.remove(user)    
-        return Response({"message":"User deleted from manager group"})
+        return Response({"message":"User deleted from manager group"}, 200)
 
     return Response({"message": "error"}, status.HTTP_400_BAD_REQUEST)    
 
