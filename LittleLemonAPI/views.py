@@ -1,4 +1,5 @@
 
+from unicodedata import name
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from .models import Cart, MenuItem, Order
@@ -89,11 +90,7 @@ def category(request):
         serialized_category.is_valid(raise_exception=True)
         serialized_category.save()    
         return Response(serialized_category.data, status.HTTP_201_CREATED)
-
-@api_view()
-@permission_classes([IsAuthenticated])
-def secret(request):
-    return Response({"message":"Some secret message"})      
+   
 
 @api_view(['POST','DELETE', 'GET'])
 @permission_classes([IsAuthenticated])
@@ -137,6 +134,40 @@ def delivery(request):
 
     return Response({"message": "error"}, status.HTTP_400_BAD_REQUEST)   
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def cart(request):
+    token = request.data['token']
+    user_id = request.data['user_id']
+    if token and request.method == 'GET':
+        user = User.objects.filter(User, token=token)
+        cart = get_object_or_404(Cart, name=user_id)
+        serialized_item = CartSerializer(cart)
+        return Response(serialized_item.data, status.HTTP_200_OK)
+    if request.method == 'POST':
+        serialized_item = CartSerializer(data=request.data)
+        serialized_item.is_valid(raise_exception=True)
+        serialized_item.save()
+        return Response(serialized_item.data, status.HTTP_201_CREATED)    
+
+# def single_item(request, id):
+#     if request.method == 'GET':
+#         item = get_object_or_404(MenuItem, pk=id)
+#         serialized_item = MenuItemSerializer(item)
+#         return Response(serialized_item.data, status=status.HTTP_200_OK)
+#     if request.method == 'DELETE' and request.user.groups.filter(name='Manager'):
+#         item = MenuItem.objects.filter(id=id)
+#         item.delete()
+#         return Response({"message":"Menu item has been deleted"}, status.HTTP_200_OK)
+
+#     if request.method == 'PUT' or 'PATCH' and request.user.groups.filter(name='Manager'):
+#         item = MenuItem.objects.filter(id=id).first()
+#         serialized_item = MenuItemSerializer(item, data=request.data, partial=True)
+#         if serialized_item.is_valid():
+#             serialized_item.save()
+#             return Response({"message":"Item has been updated"}, status=status.HTTP_200_OK)    
+
+#     return Response({"message":"You are  not authorized"}, 403)        
 
 @api_view()
 @permission_classes([IsAuthenticated])

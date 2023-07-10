@@ -13,13 +13,14 @@ urlpatterns = [
     # path('menu-items/<id>', views.SingleMenuItemView.as_view()),
     path('menu-items/', views.menu_items),
     path('menu-items/<int:id>/', views.single_item),
-    path('secret/', views.secret),
+    # cart
     path('api-token-auth/', obtain_auth_token),
     path('manager-view/', views.manager_view),
     path('throttle-check/', views.throttle_check),
     path('throttle-check-auth/', views.throttle_check_auth),
     path('groups/manager/users', views.managers),
     path('groups/delivery-crew/users', views.delivery),
+    path('cart/menu-items', views.cart),
     # path('category/', views.category),
     
 ]
