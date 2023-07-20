@@ -140,8 +140,9 @@ def cart(request):
     username = request.data['username']
     if request.method == 'GET' and username:
         user = get_object_or_404(User, username=username)
-        cart = get_object_or_404(Cart)
-        serialized_cart = CartSerializer(cart)
+        cart = Cart.objects.all()
+        # cart = get_object_or_404(Cart)
+        serialized_cart = CartSerializer(cart, many=True)
         return Response({"data":serialized_cart.data}, 200)
     if request.method == 'POST' and username:
         serialized_cart = CartSerializer(data=request.data)
