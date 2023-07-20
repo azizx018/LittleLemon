@@ -134,14 +134,13 @@ def delivery(request):
 
     return Response({"message": "error"}, status.HTTP_400_BAD_REQUEST)   
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST','DELETE'])
 @permission_classes([IsAuthenticated])
 def cart(request):
     username = request.data['username']
     if request.method == 'GET' and username:
         user = get_object_or_404(User, username=username)
         cart = Cart.objects.all()
-        # cart = get_object_or_404(Cart)
         serialized_cart = CartSerializer(cart, many=True)
         return Response({"data":serialized_cart.data}, 200)
     if request.method == 'POST' and username:
@@ -149,21 +148,12 @@ def cart(request):
         serialized_cart.is_valid(raise_exception=True)
         serialized_cart.save()
         return Response(serialized_cart.data, status.HTTP_201_CREATED)  
+    if request.method == 'DELETE' and username:
+        cart = Cart.objects.all()
+        cart.delete()
+        return Response({"message":"Menu item has been deleted"}, status.HTTP_200_OK)
+
         
-    
-    
-    # if request.method == 'GET':
-    #     cart = get_object_or_404(Cart, user= user)
-    #     serialized_cart = CartSerializer(cart)
-    #     return Response(serialized_cart.data, status.HTTP_200_OK)
-        # user = get_object_or_404(User, token=token)
-        # user_serializer = UserSerializer(user, many=True)
-        # return Response({"data":user_serializer.data}, 200)
-    # token = request.data['token']
-    # if token and request.method == 'GET':
-    #     cart = get_object_or_404(Cart, user=user)
-    #     serialized_item = CartSerializer(cart)
-    #     return Response(serialized_item.data, status.HTTP_200_OK) 
     
 
 # def single_item(request, id):
