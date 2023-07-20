@@ -4,10 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+requests = "*"
 django = "*"
-djangorestframework = "*"
-django-debug-toolbar = "*"
-djoser = "*"
 
 [dev-packages]
 
