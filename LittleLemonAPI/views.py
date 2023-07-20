@@ -137,11 +137,14 @@ def delivery(request):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def cart(request):
+    
+    if request.method == 'GET':
+        user = get_object_or_404(User, token=token)
+        user_serializer = UserSerializer(user, many=True)
+        return Response({"data":user_serializer.data}, 200)
     token = request.data['token']
-    user_id = request.data['user_id']
     if token and request.method == 'GET':
-        user = User.objects.filter(User, token=token)
-        cart = get_object_or_404(Cart, name=user_id)
+        cart = get_object_or_404(Cart, user=user)
         serialized_item = CartSerializer(cart)
         return Response(serialized_item.data, status.HTTP_200_OK)
     if request.method == 'POST':
@@ -149,6 +152,7 @@ def cart(request):
         serialized_item.is_valid(raise_exception=True)
         serialized_item.save()
         return Response(serialized_item.data, status.HTTP_201_CREATED)    
+    
 
 # def single_item(request, id):
 #     if request.method == 'GET':
