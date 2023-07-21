@@ -2,9 +2,9 @@
 from unicodedata import name
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from .models import Cart, MenuItem, Order
+from .models import Cart, MenuItem, Order, OrderItem
 from .models import Cateogry
-from .serializers import CartSerializer, CategorySerializer, MenuItemSerializer, OrderSerializer, UserSerializer
+from .serializers import CartSerializer, CategorySerializer, MenuItemSerializer, OrderSerializer, UserSerializer, OrderItemSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import generics
@@ -22,10 +22,14 @@ from LittleLemonAPI import serializers
 #         queryset = MenuItem.objects.all()
 #         serializer_class = MenuItemSerializer
 
+class OrderView(generics.ListCreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer   
+      
 class OrderItemView(generics.ListCreateAPIView):
     queryset = Order.objects.all()
-    serializer_class = OrderSerializer     
-
+    serializer_class = OrderItemSerializer 
+    
 class CategoryView(generics.ListCreateAPIView):
         queryset = Cateogry.objects.all()
         serializer_class = CategorySerializer 
@@ -153,27 +157,22 @@ def cart(request):
         cart.delete()
         return Response({"message":"Menu item has been deleted"}, status.HTTP_200_OK)
 
-        
-    
-
-# def single_item(request, id):
-#     if request.method == 'GET':
-#         item = get_object_or_404(MenuItem, pk=id)
-#         serialized_item = MenuItemSerializer(item)
-#         return Response(serialized_item.data, status=status.HTTP_200_OK)
-#     if request.method == 'DELETE' and request.user.groups.filter(name='Manager'):
-#         item = MenuItem.objects.filter(id=id)
-#         item.delete()
-#         return Response({"message":"Menu item has been deleted"}, status.HTTP_200_OK)
-
-#     if request.method == 'PUT' or 'PATCH' and request.user.groups.filter(name='Manager'):
-#         item = MenuItem.objects.filter(id=id).first()
-#         serialized_item = MenuItemSerializer(item, data=request.data, partial=True)
-#         if serialized_item.is_valid():
-#             serialized_item.save()
-#             return Response({"message":"Item has been updated"}, status=status.HTTP_200_OK)    
-
-#     return Response({"message":"You are  not authorized"}, 403)        
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def order(request):
+    username = request.data['username']
+    ## gets current user order if username is present
+    if request.method == 'GET' and username:
+        order = Order.objects.all()
+        serialized_order = OrderSerializer(order, many=True)
+        return Response({"data":serialized_order.data}, 200)
+       
+    if request.method == 'POST' and username:
+        cart = Cart.objects.all()
+        serialized_order_item = OrderItemSerializer(data=request.data)
+        serialized_order_item.is_valid()
+        serialized_order_item.save(cart)
+        return Response(serialized_order_item.data, status.HTTP_201_CREATED)
 
 @api_view()
 @permission_classes([IsAuthenticated])

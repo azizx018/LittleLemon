@@ -39,7 +39,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     menuitem_id = serializers.IntegerField(write_only=True)
     class Meta:
         model = OrderItem
-        fields = ['id','quantity', 'unit_price', 'price', 'menuitem_id', 'order_id']     
+        fields = ['id','quantity', 'unit_price', 'price', 'menuitem_id', 'order_id', 'menuitem']     
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
