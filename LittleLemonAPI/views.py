@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.models import User, Group
+from rest_framework.authtoken.models import Token
 
 from LittleLemonAPI import serializers
 
@@ -89,6 +90,7 @@ def category(request):
         category = Cateogry.objects.all()
         serialized_category = CategorySerializer(category, many=True)
         return Response(serialized_category.data)
+    
     if request.method == 'POST':
         serialized_category = CategorySerializer(data=request.data)
         serialized_category.is_valid(raise_exception=True)
@@ -143,10 +145,10 @@ def delivery(request):
 def cart(request):
     username = request.data['username']
     if request.method == 'GET' and username:
-        user = get_object_or_404(User, username=username)
         cart = Cart.objects.all()
         serialized_cart = CartSerializer(cart, many=True)
         return Response({"data":serialized_cart.data}, 200)
+    
     if request.method == 'POST' and username:
         serialized_cart = CartSerializer(data=request.data)
         serialized_cart.is_valid(raise_exception=True)
@@ -157,22 +159,33 @@ def cart(request):
         cart.delete()
         return Response({"message":"Menu item has been deleted"}, status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def order(request):
     username = request.data['username']
+    user_id = Token.objects.get(key=request.auth.key).user_id
+    user = User.objects.get(id=user_id)
+    
     ## gets current user order if username is present
     if request.method == 'GET' and username:
         order = Order.objects.all()
         serialized_order = OrderSerializer(order, many=True)
         return Response({"data":serialized_order.data}, 200)
        
-    if request.method == 'POST' and username:
-        cart = Cart.objects.all()
-        serialized_order_item = OrderItemSerializer(data=request.data)
-        serialized_order_item.is_valid()
-        serialized_order_item.save(cart)
-        return Response(serialized_order_item.data, status.HTTP_201_CREATED)
+    if request.method == 'POST' and username:  
+        serialized_order = OrderSerializer(user, data=request.data)
+        if serialized_order.is_valid():
+            serialized_order.save()
+            return Response(serialized_order.data, status.HTTP_201_CREATED)
+        else:
+            return Response(serialized_order.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # cart = Cart.objects.all()
+        # serialized_order_item = OrderItemSerializer(data=request.data)
+        # serialized_order_item.is_valid()
+        # serialized_order_item.save(cart)
+        # cart.delete()
+        
 
 @api_view()
 @permission_classes([IsAuthenticated])

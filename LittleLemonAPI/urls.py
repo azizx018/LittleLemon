@@ -21,7 +21,7 @@ urlpatterns = [
     path('groups/manager/users', views.managers),
     path('groups/delivery-crew/users', views.delivery),
     path('cart/menu-items', views.cart),
-    path('orders/', views.OrderItemView.as_view())
+    path('orders/', views.order)
     # path('category/', views.category),
     
 ]
