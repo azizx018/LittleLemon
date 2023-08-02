@@ -8,6 +8,11 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Cateogry
         fields = ['id','slug','title']
+        
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'        
 
 class MenuItemSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
@@ -30,21 +35,27 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    # delivery_crew = UserSerializer(read_only=True)
+    user_id = UserSerializer(read_only=True)
+     
+    # delivery_crew_id = serializers.IntegerField()
     class Meta:
         model = Order
-        fields = ['id','status','total', 'date', 'delivery_crew_id','user_id']
+        fields = ['id', 'status','total', 'date', 'delivery_crew', 'user_id']
+        
+    # def get_user(self, user:User):
+    #    return user.id    
+    
 
 class OrderItemSerializer(serializers.ModelSerializer):
     menuitem = MenuItemSerializer(read_only=True)
     menuitem_id = serializers.IntegerField(write_only=True)
+    order_id = serializers.IntegerField(write_only=True)
     class Meta:
         model = OrderItem
-        fields = ['id','quantity', 'unit_price', 'price', 'menuitem_id', 'order_id', 'menuitem']     
+        fields = ['id', 'order','menuitem', 'quantity', 'unit_price', 'price', 'menuitem_id', 'order_id']     
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = '__all__'
+
 
 
 
