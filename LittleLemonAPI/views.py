@@ -13,6 +13,7 @@ from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth.models import User, Group
 from rest_framework.authtoken.models import Token
+import datetime
 
 from LittleLemonAPI import serializers
 
@@ -43,7 +44,7 @@ class CartView(generics.ListCreateAPIView):
 @api_view(['GET','POST'])
 def menu_items(request):
     if request.method == 'GET':
-        items = MenuItem.objects.all()
+        items = MenuItem.objects.select_related('category').all()
         serialized_item = MenuItemSerializer(items, many=True)
         return Response(serialized_item.data)
     
@@ -144,6 +145,7 @@ def delivery(request):
 @permission_classes([IsAuthenticated])
 def cart(request):
     username = request.data['username']
+    user_id = Token.objects.get(key=request.auth.key).user_id
     if request.method == 'GET' and username:
         cart = Cart.objects.all()
         serialized_cart = CartSerializer(cart, many=True)
@@ -172,13 +174,19 @@ def order(request):
         serialized_order = OrderSerializer(order, many=True)
         return Response({"data":serialized_order.data}, 200)
        
-    if request.method == 'POST' and username:  
-        serialized_order = OrderSerializer(user, data=request.data)
-        if serialized_order.is_valid():
-            serialized_order.save()
-            return Response(serialized_order.data, status.HTTP_201_CREATED)
-        else:
-            return Response(serialized_order.errors, status=status.HTTP_400_BAD_REQUEST)
+    if request.method == 'POST' and username:
+        current_user = request.user
+        # serialized_order = Order.objects.create(user_id=current_user.id)
+        # serialized_order.save()
+        serialized_order = OrderSerializer(data=request.data)
+        serialized_order.is_valid(raise_exception=True)
+        # validatedData = serialized_order.validated_data
+        # user_id = validatedData.get('id')
+        
+        serialized_order.save(user_id = user)
+        return Response(serialized_order.data, status.HTTP_201_CREATED)
+        # else:
+            # return Response(serialized_order.errors, status=status.HTTP_400_BAD_REQUEST)
         
         # cart = Cart.objects.all()
         # serialized_order_item = OrderItemSerializer(data=request.data)

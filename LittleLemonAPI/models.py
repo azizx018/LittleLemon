@@ -7,6 +7,9 @@ from django.contrib.auth.models import User
 class Cateogry(models.Model):
     slug = models.SlugField()
     title = models.CharField(max_length=255)
+    
+    def __str__(self) -> str:
+        return self.title
 
 class MenuItem(models.Model):
     title = models.CharField(max_length=255, db_index=True)
@@ -31,8 +34,8 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     delivery_crew = models.ForeignKey(User, on_delete=models.SET_NULL, related_name="delivery_crew", null=True)
     status = models.BooleanField(db_index=True, default=0)
-    total = models.DecimalField(max_digits=6, decimal_places=2)
-    date = models.DateField(db_index=True)        
+    total = models.DecimalField(max_digits=6, decimal_places=2, default=00.00)
+    date = models.DateField(db_index=True, blank=True, null=True)        
     
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
